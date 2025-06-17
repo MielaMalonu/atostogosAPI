@@ -16,11 +16,13 @@ const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID; // The ID of your Discord server/guild
 const DISCORD_HOLIDAY_ROLE_ID = process.env.DISCORD_HOLIDAY_ROLE_ID; // The ID of the role to add/remove
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+// IMPORTANT: For backend services that need to bypass RLS, use the service_role key
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const TIMEZONE = process.env.TIMEZONE || 'Europe/Vilnius'; // Default to Lithuania's timezone (EEST)
 
 // --- Supabase Client Initialization ---
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Using the service_role key to bypass RLS for server-side operations
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 console.log('Supabase Client Initialized.');
 
 // --- Discord Client Initialization ---
@@ -189,11 +191,25 @@ app.post('/schedule-holiday', async (req, res) => {
                 start_time: startMoment.toISOString(), // Store as ISO string (UTC)
                 end_time: endMoment.toISOString(),     // Store as ISO string (UTC)
                 status: 'pending',
-            });
+            })
+            .select(); // Explicitly request the inserted data back
+
+        // --- NEW DEBUGGING LOGS ---
+        console.log('Supabase insert operation result:');
+        console.log('Data:', data);
+        console.log('Error:', error);
+        // --- END NEW DEBUGGING LOGS ---
+
 
         if (error) {
             console.error('Supabase insert error:', error);
-            return res.status(500).json({ error: 'Failed to save holiday to database.' });
+            return res.status(500).json({ error: `Failed to save holiday to database: ${error.message}` });
+        }
+
+        // Check if data is null or empty before trying to access data[0]
+        if (!data || data.length === 0) {
+            console.error('Supabase insert returned no data, even without an explicit error.');
+            return res.status(500).json({ error: 'Failed to save holiday: No data returned from database insert.' });
         }
 
         res.status(200).json({ message: 'Holiday scheduled successfully!', holiday: data[0] });
@@ -311,7 +327,7 @@ cron.schedule('* * * * *', async () => {
 // --- Start Server ---
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-    console.log('Ensure you have a .env file with DISCORD_BOT_TOKEN, DISCORD_GUILD_ID, DISCORD_HOLIDAY_ROLE_ID, SUPABASE_URL, SUPABASE_ANON_KEY.');
+    console.log('Ensure you have a .env file with DISCORD_BOT_TOKEN, DISCORD_GUILD_ID, DISCORD_HOLIDAY_ROLE_ID, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.');
 });
 
 /*
@@ -331,8 +347,9 @@ DISCORD_HOLIDAY_ROLE_ID="YOUR_DISCORD_HOLIDAY_ROLE_ID_HERE"
 // Supabase Project URL (from Supabase Project Settings -> API)
 SUPABASE_URL="YOUR_SUPABASE_PROJECT_URL_HERE"
 
-// Supabase Public Anon Key (from Supabase Project Settings -> API)
-SUPABASE_ANON_KEY="YOUR_SUPABASE_PUBLIC_ANON_KEY_HERE"
+// Supabase Service Role Key (from Supabase Project Settings -> API -> service_role (secret))
+// IMPORTANT: This key bypasses Row Level Security (RLS) and should only be used in backend services.
+SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE"
 
 // Optional: Timezone for scheduling (e.g., 'America/New_York', 'Europe/London', 'Asia/Tokyo')
 // Default is 'Europe/Vilnius' (EEST)
