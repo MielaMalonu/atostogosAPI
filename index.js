@@ -241,11 +241,21 @@ cron.schedule('* * * * *', async () => {
         for (const holiday of holidays) {
             console.log(`[Scheduler] Starting holiday for user ${holiday.discord_user_id} (Reason: ${holiday.reason})`);
 
+            // Format end_time for Discord timestamp
+            const endTimestamp = moment.tz(holiday.end_time, TIMEZONE).unix(); // Get Unix timestamp in seconds
+            const discordFormattedEndDate = `<t:${endTimestamp}:F>`; // Discord's long date/time format
+
+            // Styled Lithuanian message for holiday start
+            const startMessage = `🎉 Jūsų atostogos prasidėjo!\n\n` +
+                                 `**Priežastis:** \`${holiday.reason}\`\n` +
+                                 `**Pabaigos data:** ${discordFormattedEndDate}\n\n` +
+                                 `Mėgaukitės pertrauka!`;
+
             // Perform Discord actions
             const roleAdded = await addHolidayRole(holiday.discord_user_id);
             const dmSent = await sendDirectMessage(
                 holiday.discord_user_id,
-                `👋 Your holiday has officially started! Enjoy your break. Reason: ${holiday.reason}. It ends on ${moment.tz(holiday.end_time, TIMEZONE).format('YYYY/MM/DD HH:mm')}.`
+                startMessage
             );
 
             // Update status in Supabase only if Discord actions were attempted
@@ -292,11 +302,15 @@ cron.schedule('* * * * *', async () => {
         for (const holiday of holidays) {
             console.log(`[Scheduler] Ending holiday for user ${holiday.discord_user_id}`);
 
+            // Styled Lithuanian message for holiday end
+            const endMessage = `� Jūsų atostogos baigėsi! Sveiki sugrįžę.\n\n` +
+                               `Norint pratęsti, pildykite paraišką iš naujo.`;
+
             // Perform Discord actions
             const roleRemoved = await removeHolidayRole(holiday.discord_user_id);
             const dmSent = await sendDirectMessage(
                 holiday.discord_user_id,
-                `🎉 Your holiday has ended! Welcome back. If you still need time off, please re-apply.`
+                endMessage
             );
 
             // Update status in Supabase only if Discord actions were attempted
