@@ -1,0 +1,28 @@
+{
+  "name": "discord-holiday-manager",
+  "version": "1.0.0",
+  "description": "API for managing Discord user holidays with Supabase and Discord bot integration.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "discord",
+    "holiday",
+    "api",
+    "nodejs",
+    "supabase",
+    "railway"
+  ],
+  "author": "Your Name/Organization",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.4",
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "moment-timezone": "^0.5.45",
+    "node-cron": "^3.0.3"
+  }
+}
