@@ -246,10 +246,9 @@ cron.schedule('* * * * *', async () => {
             const discordFormattedEndDate = `<t:${endTimestamp}:F>`; // Discord's long date/time format
 
             // Styled Lithuanian message for holiday start
-            const startMessage = `🎉 Jūsų atostogos prasidėjo!\n\n` +
+            const startMessage = `# **🎉 Jūsų atostogos prasidėjo!**\n\n` +
                                  `**Priežastis:** \`${holiday.reason}\`\n` +
-                                 `**Pabaigos data:** ${discordFormattedEndDate}\n\n` +
-                                 `Mėgaukitės pertrauka!`;
+                                 `**Pabaigos data:** ${discordFormattedEndDate}`;
 
             // Perform Discord actions
             const roleAdded = await addHolidayRole(holiday.discord_user_id);
@@ -303,8 +302,8 @@ cron.schedule('* * * * *', async () => {
             console.log(`[Scheduler] Ending holiday for user ${holiday.discord_user_id}`);
 
             // Styled Lithuanian message for holiday end
-            const endMessage = `� Jūsų atostogos baigėsi! Sveiki sugrįžę.\n\n` +
-                               `Norint pratęsti, pildykite paraišką iš naujo.`;
+            const endMessage = `# **Jūsų atostogos baigėsi! Sveiki sugrįžę.**` +
+                               `**Norint pratęsti atostogas, pildykite paraišką iš naujo.**`;
 
             // Perform Discord actions
             const roleRemoved = await removeHolidayRole(holiday.discord_user_id);
