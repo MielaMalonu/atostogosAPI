@@ -302,8 +302,8 @@ cron.schedule('* * * * *', async () => {
             console.log(`[Scheduler] Ending holiday for user ${holiday.discord_user_id}`);
 
             // Styled Lithuanian message for holiday end
-            const endMessage = `# **Jūsų atostogos baigėsi! Sveiki sugrįžę.**` +
-                               `**Norint pratęsti atostogas, pildykite paraišką iš naujo.**`;
+            const endMessage = `# **Jūsų atostogos baigėsi!**\n \n` +
+                             `**Norint pratęsti atostogas, pildykite paraišką iš naujo.**`;
 
             // Perform Discord actions
             const roleRemoved = await removeHolidayRole(holiday.discord_user_id);
